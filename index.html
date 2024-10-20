@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد الذكي - الأحرار</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a44ff;
+            --secondary-color: #4ca5ff;
+            --background-color: #f0f0f0;
+            --text-color: #333;
+            --accent-color: #ff6b6b;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .app-container {
+            width: 375px;
+            height: 812px;
+            background-color: white;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .app-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: ripple 10s linear infinite;
+        }
+
+        @keyframes ripple {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50%, 50%); }
+        }
+
+        .content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: calc(100% - 180px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary-color) transparent;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+        .ai-circle {
+            width: 150px;
+            height: 150px;
+            background: conic-gradient(from 0deg, var(--primary-color), var(--secondary-color), var(--accent-color), var(--primary-color));
+            border-radius: 50%;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            animation: rotate 10s linear infinite, pulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-circle::before {
+            content: 'AI';
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #chat-box {
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        #chat-box:focus-within {
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 20px;
+            background-color: rgba(248, 248, 248, 0.9);
+            position: absolute;
+            bottom: 0;
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .control-btn {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        .control-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 12px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            position: relative;
+            animation: messageAppear 0.5s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user {
+            background-color: #e1f5fe;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot {
+            background-color: #f0f4c3;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user::after, .bot::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border: 8px solid transparent;
+        }
+
+        .user::after {
+            right: -8px;
+            border-left-color: #e1f5fe;
+        }
+
+        .bot::after {
+            left: -8px;
+            border-right-color: #f0f4c3;
+        }
+
+        .onboarding {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .onboarding.active {
+            opacity: 1;
+        }
+
+        .onboarding h2 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .onboarding p {
+            margin-bottom: 30px;
+            font-size: 18px;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+
+        .next-btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        .next-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .progress-bar {
+            width: 80%;
+            height: 6px;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress {
+            width: 33.33%;
+            height: 100%;
+            background-color: white;
+            transition: width 0.5s ease;
+        }
+
+        #typing-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #666;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .emoji-reaction {
+            font-size: 24px;
+            position: absolute;
+            animation: emojiFloat 2s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes emojiFloat {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        #voice-visualizer {
+            width: 200px;
+            height: 60px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .visualizer-bar {
+            width: 8px;
+            background-color: var(--primary-color);
+            transition: height 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div id="onboarding-screens">
+            <div class="onboarding" id="screen1">
+                <i class="fas fa-robot feature-icon"></i>
+                <h2>مرحبًا بك في الأحرار AI</h2>
+                <p>استمتع بتجربة ذكاء اصطناعي فريدة</p>
+                <button class="next-btn" onclick="showNextScreen(2)">التالي</button>
+                <div class="progress-bar"><div class="progress" style="width: 33.33%"></div></div>
+            </div>
+            <div class="onboarding" id="screen2">
+                <i class="fas fa-microphone-alt feature-icon"></i>
+                <h2>دعم صوتي متقدم</h2>
+                <p>تحدث مع المساعد الذكي وأسمع ردوده بصوت طبيعي</p>
+                <button class="next-btn" onclick="showNextScreen(3)">التالي</button>
+                <div class="progress-bar"><div class="progress" style="width: 66.66%"></div></div>
+            </div>
+            <div class="onboarding" id="screen3">
+                <i class="fas fa-brain feature-icon"></i>
+                <h2>ذكاء متطور</h2>
+                <p>يستخدم أحدث نماذج الذكاء الاصطناعي للإجابة على أسئلتك</p>
+                <button class="next-btn" onclick="finishOnboarding()">ابدأ</button>
+                <div class="progress-bar"><div class="progress" style="width: 100%"></div></div>
+            </div>
+        </div>
+        
+        <div id="main-app" style="display: none;">
+            <div class="header">
+                <h1>الأحرار AI</h1>
+            </div>
+            <div class="content">
+                <div class="ai-circle"></div>
+                <div id="chat-box"></div>
+                <div id="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                    <div id="voice-visualizer">
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div id="voice-visualizer">
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" onclick="startRecognition()">
+                    <i class="fas fa-microphone"></i> تحدث
+                </button>
+                <button class="control-btn" onclick="clearChat()">
+                    <i class="fas fa-trash-alt"></i> مسح
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        const API_KEY = "AIzaSyAJ5AVTVNbNiOTatAKH1VI3q_9eJppclYE";
+        const ELEVENLABS_API_KEY = "sk_dc5597e50ee5879701e59eccbb23f66090aa0875683d75fd";
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+        const chatBox = document.getElementById('chat-box');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const voiceVisualizer = document.getElementById('voice-visualizer');
+        const visualizerBars = voiceVisualizer.querySelectorAll('.visualizer-bar');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ar-SA';
+        recognition.interimResults = false;
+        recognition.continuous = false;
+
+        window.startRecognition = function() {
+            recognition.start();
+            animateVoiceVisualizer();
+        }
+
+        recognition.onresult = (event) => {
+            const userMessage = event.results[0][0].transcript;
+            addMessage(userMessage, 'user');
+            generateBotResponse(userMessage);
+            stopVoiceVisualizerAnimation();
+        };
+
+        recognition.onerror = (event) => {
+            console.error('خطأ في التعرف على الصوت:', event.error);
+            stopVoiceVisualizerAnimation();
+        };
+
+        function addMessage(text, sender) {
+            const message = document.createElement('div');
+            message.classList.add('message', sender);
+            message.textContent = text;
+            chatBox.appendChild(message);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            addEmojiReaction(sender);
+        }
+
+        function addEmojiReaction(sender) {
+            const emoji = sender === 'user' ? '😊' : '🤖';
+            const reaction = document.createElement('div');
+            reaction.textContent = emoji;
+            reaction.classList.add('emoji-reaction');
+            reaction.style.left = `${Math.random() * 80 + 10}%`;
+            chatBox.appendChild(reaction);
+            setTimeout(() => reaction.remove(), 2000);
+        }
+
+        async function generateBotResponse(userMessage) {
+            typingIndicator.style.display = 'flex';
+            try {
+                const result = await model.generateContent(userMessage);
+                const botMessage = result.response.text();
+                typingIndicator.style.display = 'none';
+                addMessage(botMessage, 'bot');
+                speakWithElevenLabs(botMessage);
+            } catch (error) {
+                console.error('خطأ في توليد الرد:', error);
+                typingIndicator.style.display = 'none';
+                addMessage('عذراً، حدث خطأ أثناء معالجة طلبك.', 'bot');
+            }
+        }
+
+        async function speakWithElevenLabs(text) {
+            const voiceId = "2EiwWnXFnvU5JabPnv8n"; // معرف الصوت العربي في ElevenLabs
+            const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+            
+            const headers = new Headers();
+            headers.append("Accept", "audio/mpeg");
+            headers.append("Content-Type", "application/json");
+            headers.append("xi-api-key", ELEVENLABS_API_KEY);
+
+            const raw = JSON.stringify({
+                "text": text,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.5
+                }
+            });
+
+            const requestOptions = {
+                method: 'POST',
+                headers: headers,
+                body: raw,
+                redirect: 'follow'
+            };
+
+            try {
+                const response = await fetch(url, requestOptions);
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            } catch (error) {
+                console.error('خطأ في تحويل النص إلى كلام:', error);
+            }
+        }
+
+        window.clearChat = function() {
+            chatBox.innerHTML = '';
+        }
+
+        function animateVoiceVisualizer() {
+            visualizerBars.forEach(bar => {
+                const height = Math.random() * 50 + 10;
+                bar.style.height = `${height}px`;
+            });
+            if (recognition.recognizing) {
+                requestAnimationFrame(animateVoiceVisualizer);
+            }
+        }
+
+        function stopVoiceVisualizerAnimation() {
+            visualizerBars.forEach(bar => {
+                bar.style.height = '0px';
+            });
+        }
+
+        // التحقق من عرض شاشات البداية
+        window.onload = function() {
+            if (!localStorage.getItem('onboardingComplete')) {
+                document.getElementById('onboarding-screens').style.display = 'block';
+                document.getElementById('screen1').classList.add('active');
+            } else {
+                document.getElementById('main-app').style.display = 'block';
+            }
+        }
+
+        window.showNextScreen = function(screenNumber) {
+            document.getElementById(`screen${screenNumber - 1}`).classList.remove('active');
+            document.getElementById(`screen${screenNumber}`).classList.add('active');
+        }
+
+        window.finishOnboarding = function() {
+            localStorage.setItem('onboardingComplete', 'true');
+            document.getElementById('onboarding-screens').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
